@@ -42,7 +42,7 @@ int main() {
 			}
 			cur++;
 		}
-		for (int i = 0; i <= cur; i++)
+		for (int i = 0; i < cur; i++)
 			ans += mass[molar_name[i]] * (float)molar_count[i];
 		printf("%.3f\n", ans);
 	}
