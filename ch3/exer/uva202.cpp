@@ -8,8 +8,8 @@ using namespace std;
 int quo[maxn], mod[maxn];
 
 int main() {
-	freopen("data.in", "r", stdin);
-	freopen("data.out", "w", stdout);
+	// freopen("data.in", "r", stdin);
+	// freopen("data.out", "w", stdout);
 	int num, dnum;
 	while(scanf("%d%d", &num, &dnum) != EOF) {
 		printf("%d/%d = ", num, dnum);
@@ -26,27 +26,22 @@ int main() {
 
 		int cal = 0, cycStart, cycEnd;
 		for(;;) {
-			if (num == 0) {
-				quo[cal] = 0;
-				cycStart = cal;
-				cycEnd = cal + 1;
-				break;
-			}
+			mod[cal] = num;
 			num *= 10;
 			quo[cal] = num / dnum;
-			mod[cal] = num % dnum;
 			if (cyc.count(mod[cal]) > 0) {
 				cycEnd = cal;
-				cycStart = cyc[mod[cal]] + 1;
+				cycStart = cyc[mod[cal]];
 				break;
 			}
 			else {
 				cyc[mod[cal]] = cal;
 			}
-			num = mod[cal];
+			num %= dnum;
 			cal++;
 		}
-		int cycLen = cycEnd - cycStart + 1;
+		int cycLen = cycEnd - cycStart;
+		cycEnd--;
 		if (cycEnd > 49) cycEnd = 49;
 		for (int i = 0; i <= cycEnd; i++) {
 			if (i == cycStart) printf("(");
