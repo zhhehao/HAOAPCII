@@ -1,15 +1,20 @@
+/* get ac, after use strcmp replace memcmp
+**
+** Please remember divide 0 may be caused error, need handle it.
+** And add EPS to resolve floating number error.
+*/
 # include <cstdio>
 # include <cstring>
 # include <cctype>
 using namespace std;
 
-# define maxn 300
-# define EPS 1e-6
+# define maxn 1024
+# define EPS 1e-5
 int s_count;
 
 struct Students {
 	int cid;
-	char name[10], sid[11];
+	char name[12], sid[12];
 	int chinese, math, english, program;
 	int total;
 	double avg;
@@ -26,16 +31,12 @@ void add_students() {
 	bool dup;
 	for(;;) {
 		printf("Please enter the SID, CID, name and four scores. Enter 0 to finish.\n");
+		memset(spms[s_count].sid, '\0', sizeof(spms[s_count].sid));
 		scanf("%s", spms[s_count].sid);
-		if(strlen(spms[s_count].sid) == 1)
-			if (spms[s_count].sid[0] == '0') {
-				// printf("There is %d students.\n", s_count);
-				return;
-			}
-			else
-				continue;
-		spms[s_count].sid[10] = '\0';
+		if(strlen(spms[s_count].sid) == 1 && spms[s_count].sid[0] == '0')
+			break;
 		scanf("%d", &spms[s_count].cid);
+		memset(spms[s_count].name, '\0', sizeof(spms[s_count].name));
 		scanf("%s", spms[s_count].name);
 		scanf("%d%d%d%d", &spms[s_count].chinese, &spms[s_count].math, &spms[s_count].english, &spms[s_count].program);
 		spms[s_count].total = spms[s_count].chinese + spms[s_count].math + spms[s_count].english + spms[s_count].program;
@@ -43,7 +44,7 @@ void add_students() {
 		spms[s_count].is_active = true;
 		dup = false;
 		for (int i = 0; i < s_count; i++) {
-			if (memcmp(spms[i].sid, spms[s_count].sid, sizeof(spms[s_count].sid)) == 0 && spms[i].is_active) {
+			if (strcmp(spms[i].sid, spms[s_count].sid) == 0 && spms[i].is_active) {
 				dup = true;
 				break;
 			}
@@ -56,21 +57,18 @@ void add_students() {
 }
 
 void remove_query_students(bool choose) {
-	char id[10];
+	char id[12];
 	for(;;) {
 		printf("Please enter SID or name. Enter 0 to finish.\n");
+		memset(id, '\0', sizeof(id));
 		scanf("%s", id);
-		if(strlen(id) == 1)
-			if (id[0] == '0') {
-				return;
-			}
-			else
-				continue;
+		if(strlen(id) == 1 && id[0] == '0')
+			break;
 		if (choose) {
 			int rm_cnt = 0;
 			if (isdigit(id[0])) {
 				for (int i = 0; i < s_count; i++) {
-					if (spms[i].is_active && memcmp(spms[i].sid, id, sizeof(id)) == 0) {
+					if (spms[i].is_active && strcmp(spms[i].sid, id) == 0) {
 						spms[i].is_active = false;
 						rm_cnt++;
 						break;
@@ -79,7 +77,7 @@ void remove_query_students(bool choose) {
 			}
 			else {
 				for (int i = 0; i < s_count; i++) {
-					if (spms[i].is_active && memcmp(spms[i].name, id, sizeof(char)*strlen(spms[i].name)) == 0) {
+					if (spms[i].is_active && strcmp(spms[i].name, id) == 0) {
 						spms[i].is_active = false;
 						rm_cnt++;
 					}
@@ -90,26 +88,26 @@ void remove_query_students(bool choose) {
 		else {
 			if (isdigit(id[0])) {
 				for (int i = 0; i < s_count; i++) {
-					if (spms[i].is_active && memcmp(spms[i].sid, id, sizeof(id)) == 0) {
+					if (spms[i].is_active && strcmp(spms[i].sid, id) == 0) {
 						int srank = 1;
 						for (int j = 0; j < s_count; j++) {
 							if (j != i && spms[j].is_active && spms[j].total > spms[i].total)
 								srank++;
 						}
-						printf("%d %s %d %s %d %d %d %d %d %.2lf\n", srank, spms[i].sid, spms[i].cid, spms[i].name, spms[i].chinese, spms[i].math, spms[i].english, spms[i].program, spms[i].total, spms[i].avg);
+						printf("%d %s %d %s %d %d %d %d %d %.2f\n", srank, spms[i].sid, spms[i].cid, spms[i].name, spms[i].chinese, spms[i].math, spms[i].english, spms[i].program, spms[i].total, spms[i].avg);
 						break;
 					}
 				}
 			}
 			else {
 				for (int i = 0; i < s_count; i++) {
-					if (spms[i].is_active && memcmp(spms[i].name, id, sizeof(char)*strlen(spms[i].name)) == 0) {
+					if (spms[i].is_active && strcmp(spms[i].name, id) == 0) {
 						int srank = 1;
 						for (int j = 0; j < s_count; j++) {
 							if (j != i && spms[j].is_active && spms[j].total > spms[i].total)
 								srank++;
 						}
-						printf("%d %s %d %s %d %d %d %d %d %.2lf\n", srank, spms[i].sid, spms[i].cid, spms[i].name, spms[i].chinese, spms[i].math, spms[i].english, spms[i].program, spms[i].total, spms[i].avg);
+						printf("%d %s %d %s %d %d %d %d %d %.2f\n", srank, spms[i].sid, spms[i].cid, spms[i].name, spms[i].chinese, spms[i].math, spms[i].english, spms[i].program, spms[i].total, spms[i].avg);
 					}
 				}
 			}
@@ -122,10 +120,108 @@ void show_static() {
 	int cid;
 	scanf("%d", &cid);
 	int num_student = 0;
-	int c_ave = 0, cps = 0, cfs = 0;
-	int m_ave = 0, mps = 0, mfs = 0;
-	int e_ave = 0, eps = 0, efs = 0;
-	int p_ave = 0, pps = 0, pfs = 0;
+	int cps = 0, cfs = 0, mps = 0, mfs = 0;
+	int eps = 0, efs = 0, pps = 0, pfs = 0;
+	int ctotal = 0, mtotal = 0, etotal = 0, ptotal = 0;
+	double c_ave, m_ave, e_ave, p_ave;
+	int allpass = 0, threepass = 0, twopass = 0, onepass = 0, nopass = 0;
+	if (cid == 0) {
+		for (int i = 0; i < s_count; i++) {
+			int pass = 0;
+			if (spms[i].is_active) {
+				num_student++;
+				ctotal += spms[i].chinese;
+				mtotal += spms[i].math;
+				etotal += spms[i].english;
+				ptotal += spms[i].program;
+				if (spms[i].chinese >= 60) { cps++; pass++;}
+				else cfs++;
+				if (spms[i].math >= 60) { mps++; pass++;}
+				else mfs++;
+				if (spms[i].english >= 60) { eps++; pass++;}
+				else efs++;
+				if (spms[i].program >= 60) { pps++; pass++;}
+				else pfs++;
+				if (pass == 4)
+					allpass++;
+				else if (pass == 3)
+					threepass++;
+				else if (pass == 2)
+					twopass++;
+				else if (pass == 1)
+					onepass++;
+				else
+					nopass++;
+			}
+		}
+		// division 0 need be consider.
+		printf("Chinese\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)ctotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", cps);
+		printf("Number of failed students: %d\n\n", cfs);
+		printf("Mathematics\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)mtotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", mps);
+		printf("Number of failed students: %d\n\n", mfs);
+		printf("English\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)etotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", eps);
+		printf("Number of failed students: %d\n\n", efs);
+		printf("Programming\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)ptotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", pps);
+		printf("Number of failed students: %d\n\n", pfs);
+		printf("Overall:\n");
+		printf("Number of students who passed all subjects: %d\n", allpass);
+		printf("Number of students who passed 3 or more subjects: %d\n", allpass+threepass);
+		printf("Number of students who passed 2 or more subjects: %d\n", allpass+threepass+twopass);
+		printf("Number of students who passed 1 or more subjects: %d\n", allpass+threepass+twopass+onepass);
+		printf("Number of students who failed all subjects: %d\n\n", nopass);
+	}
+	else {
+		for (int i = 0; i < s_count; i++) {
+			int pass = 0;
+			if (spms[i].is_active && spms[i].cid == cid) {
+				num_student++;
+				ctotal += spms[i].chinese;
+				mtotal += spms[i].math;
+				etotal += spms[i].english;
+				ptotal += spms[i].program;
+				if (spms[i].chinese >= 60) { cps++; pass++;}
+				else cfs++;
+				if (spms[i].math >= 60) { mps++; pass++;}
+				else mfs++;
+				if (spms[i].english >= 60) { eps++; pass++;}
+				else efs++;
+				if (spms[i].program >= 60) { pps++; pass++;}
+				else pfs++;
+				if (pass == 4)
+					allpass++;
+				else if (pass == 3)
+					threepass++;
+				else if (pass == 2)
+					twopass++;
+				else if (pass == 1)
+					onepass++;
+				else
+					nopass++;
+			}
+		}
+		printf("Chinese\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)ctotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", cps);
+		printf("Number of failed students: %d\n\n", cfs);
+		printf("Mathematics\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)mtotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", mps);
+		printf("Number of failed students: %d\n\n", mfs);
+		printf("English\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)etotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", eps);
+		printf("Number of failed students: %d\n\n", efs);
+		printf("Programming\nAverage Score: %.2f\n", num_student == 0 ? 0 : (double)ptotal / (double)num_student + EPS);
+		printf("Number of passed students: %d\n", pps);
+		printf("Number of failed students: %d\n\n", pfs);
+		printf("Overall:\n");
+		printf("Number of students who passed all subjects: %d\n", allpass);
+		printf("Number of students who passed 3 or more subjects: %d\n", allpass+threepass);
+		printf("Number of students who passed 2 or more subjects: %d\n", allpass+threepass+twopass);
+		printf("Number of students who passed 1 or more subjects: %d\n", allpass+threepass+twopass+onepass);
+		printf("Number of students who failed all subjects: %d\n\n", nopass);
+	}
 }
 
 int main() {
