@@ -4,6 +4,7 @@
 using namespace std;
 
 const int maxn = 144 + 5;
+// this EPS is so big, will cause error
 const double EPS = 1e-6;
 
 struct Player {
@@ -64,32 +65,6 @@ void getInput(void) {
 	}
 }
 
-// void solve(){
-//     sort(p,p+n,cmp1);
-//     pos=0;
-//     while(pos<min(n,70)&&p[pos].dq>1) ++pos;
-//     while(p[pos].dq>1&&p[pos].rd2==p[pos-1].rd2) ++pos;
-//     sort(p,p+pos,cmp2);
-//     int k=0,rk=0,prk=0;
-//     while(k<pos){
-//         if(p[k].dq != 4) break;
-//         int sta=k,prerk=rk+1,cnt=0;
-//         bool x=false;
-//         double sum=0;
-//         while(p[sta].dq == 4 &&p[k].rd4==p[sta].rd4){
-//             if(!p[sta].amateur) sum+=prize[prk+cnt++],x=true;
-//             ++rk,++sta;
-//         }
-//         sum/=cnt;
-//         for(int i=k;i<=sta;++i){
-//             p[i].rank=prerk;
-//             if(prk>69) p[i].amateur=true,p[i].tie=false;
-//             if(!p[i].amateur) p[i].prize=sum,p[i].tie=cnt>1;
-//         }
-//         k=sta-1,k++;
-//         prk+=cnt;
-//     }
-// }
 
 void processInput(void) {
 	sort(p, p+n, cmp1);
@@ -159,7 +134,6 @@ int main(void) {
 	int t; scanf("%d", &t);
 	while (t--) {
 		getInput();
-		// solve();
 		processInput();
 		putOutput();
 		if (t) printf("\n");
