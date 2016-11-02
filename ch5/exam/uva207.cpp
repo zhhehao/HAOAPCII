@@ -1,7 +1,3 @@
-/*
-** detail
-*/
-
 # include <cstdio>
 # include <cstring>
 # include <algorithm>
@@ -11,143 +7,162 @@ const int maxn = 144 + 5;
 const double EPS = 1e-6;
 
 struct Player {
-	int tot, pre, dq, rd[4], rank;
+	int rd2, rd4, rd[4], dq, rank;
 	char name[25];
-	double prize;
 	bool amateur, tie;
+	double prize;
 };
 
 Player p[maxn];
+int n, pos;
+double prize[maxn];
 
-int cmp1(const Player& a, const Player& b) {
-	if (a.dq > -3 && b.dq > -3)
-		return a.pre < b.pre;
-	else
-		return a.dq > b.dq;
+int cmp1(const Player& a, const Player &b) {
+	if (a.dq > 1 && b.dq > 1)
+		return a.rd2 < b.rd2;
+	return a.dq > b.dq;
 }
 
-int cmp2(const Player& a, const Player& b) {
+int cmp2(const Player& a, const Player &b) {
 	if (a.dq != b.dq)
 		return a.dq > b.dq;
-	if (a.tot != b.tot)
-		return a.tot < b.tot;
+	if (a.rd4 != b.rd4)
+		return a.rd4 < b.rd4;
 	return strcmp(a.name, b.name) < 0;
+}
+
+void getInput(void) {
+	memset(p, 0, sizeof(0));
+	double total_prize; scanf("%lf", &total_prize);
+	for (int i = 0; i < 70; i++) {
+		scanf("%lf", &prize[i]);
+		prize[i] = prize[i] * total_prize / 100.0;
+	}
+
+	scanf("%d", &n);
+	char str[40]; fgets(str, 40, stdin);
+	for (int i = 0; i < n; i++) {
+		fgets(p[i].name, 21, stdin);
+		if (strchr(p[i].name, '*'))
+			p[i].amateur = true;
+		else
+			p[i].amateur = false;
+		p[i].tie = false;
+		p[i].dq = 4;
+		p[i].rd2 = 0;
+		p[i].rd4 = 0;
+		for (int j = 0; j < 4; j++) {
+			if (!scanf("%d", &p[i].rd[j])) {
+				p[i].dq = j;
+				break;
+			}
+			if (j < 2)
+				p[i].rd2 += p[i].rd[j];
+			p[i].rd4 += p[i].rd[j];
+		}
+		fgets(str, 40, stdin);
+	}
+}
+
+// void solve(){
+//     sort(p,p+n,cmp1);
+//     pos=0;
+//     while(pos<min(n,70)&&p[pos].dq>1) ++pos;
+//     while(p[pos].dq>1&&p[pos].rd2==p[pos-1].rd2) ++pos;
+//     sort(p,p+pos,cmp2);
+//     int k=0,rk=0,prk=0;
+//     while(k<pos){
+//         if(p[k].dq != 4) break;
+//         int sta=k,prerk=rk+1,cnt=0;
+//         bool x=false;
+//         double sum=0;
+//         while(p[sta].dq == 4 &&p[k].rd4==p[sta].rd4){
+//             if(!p[sta].amateur) sum+=prize[prk+cnt++],x=true;
+//             ++rk,++sta;
+//         }
+//         sum/=cnt;
+//         for(int i=k;i<=sta;++i){
+//             p[i].rank=prerk;
+//             if(prk>69) p[i].amateur=true,p[i].tie=false;
+//             if(!p[i].amateur) p[i].prize=sum,p[i].tie=cnt>1;
+//         }
+//         k=sta-1,k++;
+//         prk+=cnt;
+//     }
+// }
+
+void processInput(void) {
+	sort(p, p+n, cmp1);
+	pos = 0;
+	while (pos < min(n, 70) && p[pos].dq > 1) pos++;
+	while (p[pos].dq > 1 && p[pos].rd2 == p[pos-1].rd2) pos++;
+	sort(p, p+pos, cmp2);
+
+	int k = 0, rk = 0, prk = 0;
+	while (k < pos) {
+		if (p[k].dq != 4) break;
+		int sta = k, prerk = rk + 1, cnt = 0;
+		double sum = 0;
+		while (p[sta].dq == 4 && p[k].rd4 == p[sta].rd4) {
+			if (!p[sta].amateur)
+				sum += prize[prk + cnt++];
+			rk++;
+			sta++;
+		}
+		sum /= cnt;
+		for (int i = k; i < sta; i++) {
+			p[i].rank = prerk;
+			// I found my wa reason, it is here.
+			if (prk > 69) p[i].amateur = true, p[i].tie = false;
+			if (!p[i].amateur) {
+				p[i].prize = sum;
+				if (cnt > 1)
+					p[i].tie = true;
+			}
+		}
+		k = sta;
+		prk += cnt;
+	}
+}
+
+void putOutput(void) {
+	printf("Player Name          Place     RD1  RD2  RD3  RD4  TOTAL     Money Won\n");
+	printf("-----------------------------------------------------------------------\n");
+	for (int i = 0; i < pos; i++) {
+		printf("%-21s", p[i].name);
+		if (p[i].dq != 4) printf("          ");
+		else {
+			char t[5];
+			sprintf(t, "%d%c", p[i].rank, p[i].tie ? 'T':' ');
+			printf("%-10s", t);
+		}
+		for (int j = 0; j < 4; j++) {
+			if (p[i].dq == j) break;
+			printf("%-5d", p[i].rd[j]);
+		}
+		if (p[i].dq == 2) printf("          DQ");
+		if (p[i].dq == 3) printf("     DQ");
+		if (p[i].dq != 4) {printf("\n"); continue;}
+		if (p[i].amateur)
+			printf("%d", p[i].rd4);
+		else {
+			printf("%-10d", p[i].rd4);
+			printf("$%9.2lf", p[i].prize);
+		}
+		printf("\n");
+	}
 }
 
 int main(void) {
 	// freopen("data.in", "r", stdin);
 	// freopen("data.out", "w", stdout);
-	int T, kase = 0; scanf("%d", &T);
-	while (T--) {
-		memset(p, 0, sizeof(p));
-		double total_prize; scanf("%lf", &total_prize);
-		double prize[maxn];
-		for (int i = 0; i < 70; i++) {
-			scanf("%lf", &prize[i]);
-			prize[i] = prize[i]  / 100.0 * total_prize;
-		}
-		int n; scanf("%d", &n); char s[40];
-		fgets(s, 40, stdin);
-		for (int i = 0; i < n; i++) {
-			fgets(p[i].name, 20, stdin);
-			if (strchr(p[i].name, '*')) p[i].amateur = true;
-			for (int j = 0; j < 4; j++) {
-				if (!scanf("%d", &p[i].rd[j])) {
-					p[i].dq = j - 4;
-					break;
-				}
-				if (j < 2) p[i].pre += p[i].rd[j];
-				p[i].tot += p[i].rd[j];
-			}
-			fgets(s, 40, stdin);
-		}
-
-		// for (int i = 0; i < n; i++)
-		// 	printf("%s\n", p[i].name);
-
-		sort(p, p+n, cmp1);
-		int pos = 0;
-		while (pos < min(n, 70) && p[pos].dq > -3) ++pos;
-		while (p[pos].dq > -3 && p[pos].pre == p[pos-1].pre) ++pos;
-		// printf("pos is %d\n", pos);
-		sort(p, p+pos, cmp2);
-
-		int k=0,rk=0,prk=0;
-	    while(k<pos){
-	        if(p[k].dq) break;
-	        int sta=k,prerk=rk+1,cnt=0;
-	        bool x=false;
-	        double sum=0;
-	        while(!p[sta].dq&&p[k].tot==p[sta].tot){
-	            if(!p[sta].amateur) sum+=pri[prk+cnt++],x=true;
-	            ++rk,++sta;
-	        }
-	        sum/=cnt;
-	        for(int i=k;i<=sta;++i){
-	            p[i].rk=prerk;
-	            if(prk>69) p[i].amateur=true,p[i].t=false;
-	            if(!p[i].amateur) p[i].prize=sum,p[i].t=cnt>1;
-	        }
-	        k=sta-1,k++;
-	        prk+=cnt;
-	    }
-
-		int rk = 0, prk = 0;
-		for (int i = 0; i < pos; ){
-			// printf("i is %d\n", i);
-			if (p[i].dq) break;
-			int same = i, same_cnt = 0, prerk = rk + 1;
-			double sum = 0.0;
-			while (!p[same].dq && p[i].tot == p[same].tot) {
-				if (!p[same].amateur) {
-					sum += prize[prk + same_cnt++];
-				}
-				rk++;
-				same++;
-			}
-			sum /= same_cnt;
-			for (int j = i; j <= same; j++) {
-				p[j].rank = prerk;
-				if (prk > 69) {
-					p[j].amateur = true;
-					p[j].tie = false;
-				}
-				if (!p[j].amateur) {
-					p[j].prize = sum;
-					if (same_cnt > 1)
-						p[j].tie = true;
-					else
-						p[j].tie = false;
-				}
-			}
-			i = same - 1;
-			i++;
-			prk += same_cnt;
-		}
-
-		if (kase++) printf("\n");
-		printf("Player Name          Place     RD1  RD2  RD3  RD4  TOTAL     Money Won\n");
-    	printf("-----------------------------------------------------------------------\n");
-    	for (int i = 0; i < pos; i++) {
-    		printf("%-21s", p[i].name);
-    		if (p[i].dq) printf("          ");
-    		else {
-    			char place[5];
-    			sprintf(place, "%d%c", p[i].rank, p[i].tie ? 'T' : ' ');
-    			printf("%-10s", place);
-    		}
-    		for (int j = -4; j < p[i].dq; j++) {
-    			printf("%-5d", p[i].rd[4+j]);
-    		}
-    		for (int j = p[i].dq; j < 0; j++) printf("     ");
-    		if (p[i].dq) printf("%s", "DQ");
-    		else if (!p[i].amateur)
-    			printf("%-10d", p[i].tot);
-    		else
-    			printf("%d", p[i].tot);
-    		if(p[i].dq||p[i].amateur){printf("\n");continue;}
-        	printf("$%9.2lf\n",p[i].prize + EPS);
-    	}
+	int t; scanf("%d", &t);
+	while (t--) {
+		getInput();
+		// solve();
+		processInput();
+		putOutput();
+		if (t) printf("\n");
 	}
 	return 0;
 }
