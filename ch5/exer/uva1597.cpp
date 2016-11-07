@@ -4,6 +4,7 @@
 # include <string>
 # include <sstream>
 # include <cctype>
+# include <set>
 using namespace std;
 
 const int maxn = 100 + 5;
@@ -11,7 +12,7 @@ const int maxm = 600000;
 
 vector <string> article[maxn];
 map <string, int> dict[maxn];
-vector <int> terms[maxm];
+set <int> terms[maxm];
 
 int n, cnt, m;
 
@@ -21,6 +22,7 @@ void input(void) {
 	cin >> n; getline(cin, buf);
 	for (int i = 0; i < n; i++) {
 		article[i].resize(0);
+		dict[i].clear();
 		for (;;) {
 			getline(cin, buf);
 			if (buf[0] == '*') break;
@@ -31,35 +33,66 @@ void input(void) {
 				else buf[j] = tolower(buf[j]);
 			stringstream ss(buf);
 			string term;
-			dict[i].clear();
 			while (ss >> term) {
+				// cout << i << ":" << term + "\n";
 				if (dict[i].count(term)) {
-					terms[dict[i][term]].push_back(line_num);
+					terms[dict[i][term]].insert(line_num);
 				}
 				else {
 					dict[i][term] = cnt++;
-					terms[dict[i][term]].resize(0);
-					terms[dict[i][term]].push_back(line_num);
+					terms[dict[i][term]].clear();
+					terms[dict[i][term]].insert(line_num);
 				}
 			}
+			// cout << "dict:" << i << "'s size is " << dict[i].size() << endl;
 		}
 	}
+	// cout << "cnt is " << cnt << endl;
 }
 
-void search_and(string& s) {
-
+bool search_not(string& s) {
+	string term = s.substr(4);
+	bool is_printed = false, is_find = false;
+	for (int i = 0; i < n; i++) {
+		if (!dict[i].count(term)) {
+			if (is_printed) cout << "----------\n";
+			for (int j = 0; j < article[i].size(); j++)
+				cout << article[i][j] << "\n";
+			is_printed = true;
+			is_find = true;
+		}
+	}
+	return is_find;
 }
 
-void search_or(string& s) {
-
+bool search_and(string& s) {
+	int pos = s.find("A");
+	string t1 = s.substr(0, pos-1);
+	string t2 = s.substr(pos+4);
+	// cout << t1 << '-' << t2 << endl;
+	bool is_printed = false, is_find = false;
+	return is_find;
 }
 
-void search_not(string& s) {
-
+bool search_or(string& s) {
+	return true;
 }
 
-void search_word(string& s) {
-
+bool search_word(string& s) {
+	string term = s;
+	bool is_printed = false, is_find = false;
+	for (int i = 0; i < n; i++) {
+		if (dict[i].count(term)) {
+			if (is_printed) cout << "----------\n";
+			set <int>::iterator it;
+			for (it = terms[dict[i][term]].begin(); it != terms[dict[i][term]].end(); ++it) {
+				cout << article[i][*it] << "\n";
+			}
+			is_printed = true;
+			is_find = true;
+		}
+	}
+	return is_find;
 }
 
 void solve(void) {
@@ -67,15 +100,27 @@ void solve(void) {
 	cin >> m;
 	getline(cin, buf);
 	for (int i = 0; i < m; i++) {
+		bool not_find = false;
 		getline(cin, buf);
-		if (buf.find("AND") > 0)
-			search_and(buf);
-		else if (buf.find("OR") > 0)
-			search_or(buf);
-		else if (buf[0] == 'N')
-			search_not(buf);
-		else
-			search_word(buf);
+		// cout << buf << endl;
+		if (buf[0] == 'N') {
+			if (!search_not(buf))
+				not_find = true;
+		}
+		else if (buf.find("A") != string::npos) {
+			if (!search_and(buf))
+				not_find = true;
+		}
+		else if (buf.find("O") != string::npos) {
+			if (!search_or(buf))
+				not_find = true;
+		}
+		else {
+			if (!search_word(buf))
+				not_find = true;
+		}
+		if (not_find)
+			cout << "Sorry, I found nothing.\n";
 		cout << "==========\n";
 	}
 }
