@@ -3,17 +3,21 @@
 # include <sstream>
 # include <queue>
 # include <deque>
-# include <map>
+# include <cstring>
 using namespace std;
 
 const int maxn = 100000;
 
 int n, q1, q2, q3, q4, q5, q0;
 
-queue <string> program_db[maxn];
+struct Program {
+	int name, value;
+};
+
+queue <Program> program_db[maxn];
 deque <int> ready_queue;
 queue <int> blocked_queue;
-map <char, int> var_map;
+int var[26];
 
 bool is_locked;
 
@@ -24,43 +28,46 @@ int main(void) {
 	while (t--) {
 		if (kase++) cout << "\n";
 		cin >> n >> q1 >> q2 >> q3 >> q4 >> q5 >> q0;
-		is_locked = false; var_map.clear();
+		is_locked = false;
+		memset(var, 0, sizeof(var));
 		string buf;
 		getline(cin, buf); // remove a "\n"
+		Program pp;
 		for (int i = 0; i < n; i++) {
 			for (;;) {
 				getline(cin, buf);
-				program_db[i].push(buf);
-				if (buf[2] == 'd') break;
+				if (buf[2] == '=') {
+					pp.name = buf[0] - 'a';
+					stringstream ss(buf); string nouse;
+					ss >> nouse >> nouse >> pp.value;
+				}
+				else if (buf[2] == 'i') {pp.name = -1; pp.value = buf[6]-'a';}
+				else if (buf[2] == 'c') pp.name = -2;
+				else if (buf[2] == 'l') pp.name = -3;
+				else if (buf[2] == 'd') pp.name = -4;
+				program_db[i].push(pp);
+				if (pp.name == -4) break;
 			}
 			ready_queue.push_back(i);
 		}
 		while (!ready_queue.empty()) {
 			int p = ready_queue.front(), q = q0;
 			ready_queue.pop_front();
-			while (q != 0) {
-				string &buf = program_db[p].front();
-				if (buf[2] == '=') {
-					if (q < q1) break;
+			while (q > 0) {
+				Program &buf = program_db[p].front();
+				if (buf.name >= 0) {
+					// if (q < q1) break;
 					q -= q1;
-					stringstream ss(buf);
-					string nouse;
-					int value;
-					ss >> nouse >> nouse >> value;
-					var_map[buf[0]] = value;
+					var[buf.name] = buf.value;
 				}
-				else if (buf[2] == 'i') {
-					if (q < q2) break;
+				else if (buf.name == -1) {
+					// if (q < q2) break;
 					q -= q2;
 					cout << p+1 << ": " ;
-					if (var_map.count(buf[6]))
-						cout << var_map[buf[6]] << "\n";
-					else
-						cout << "0\n";
-
+					cout << var[buf.value] << "\n";
 				}
-				else if (buf[2] == 'c') {
-					if (q < q3) break;
+				else if (buf.name == -2) {
+					// if (q < q3) break;
 					q -= q3;
 					if (is_locked) {
 						blocked_queue.push(p);
@@ -70,8 +77,8 @@ int main(void) {
 						is_locked = true;
 					}
 				}
-				else if (buf[2] == 'l') {
-					if (q < q4) break;
+				else if (buf.name == -3) {
+					// if (q < q4) break;
 					q -= q4;
 					is_locked = false;
 					if (!blocked_queue.empty()) {
@@ -79,8 +86,8 @@ int main(void) {
 						blocked_queue.pop();
 					}
 				}
-				else if (buf[2] == 'd') {
-					if (q < q5) break;
+				else if (buf.name == -4) {
+					// if (q < q5) break;
 					program_db[p].pop();
 					goto end;
 				}
