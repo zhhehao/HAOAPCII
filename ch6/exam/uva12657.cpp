@@ -35,8 +35,8 @@ void swap_change(int x, int y) {
 }
 
 int main(void) {
-	freopen("data.in", "r", stdin);
-	freopen("data.out", "w", stdout);
+	// freopen("data.in", "r", stdin);
+	// freopen("data.out", "w", stdout);
 	int kase = 1;
 	while (scanf("%d%d", &n, &m) == 2) {
 		memset(L, 0, sizeof(L));
@@ -46,23 +46,19 @@ int main(void) {
 			R[i] = i + 1;
 		}
 		L[0] = n; R[0] = 1; R[n] = 0; sw = 0;
-		int c, b1, b2;
+		int c, x, y;
 		for (int i = 0; i < m; i++) {
 			scanf("%d", &c);
-			if (c != 4) scanf("%d%d", &b1, &b2);
+			if (c != 4) scanf("%d%d", &x, &y);
 			if (sw == 1 && c < 3) c = (c == 1) ? 2 : 1;
+			if (c == 3 && R[x] == y) c = 2;
+			if (c == 3 && L[x] == y) c = 1;
 			switch (c) {
-				case 1: left_change(b1, b2); break;
-				case 2: right_change(b1, b2); break;
-				case 3: swap_change(b1, b2); break;
+				case 1: left_change(x, y); break;
+				case 2: right_change(x, y); break;
+				case 3: swap_change(x, y); break;
 				case 4: sw = (sw == 0) ? 1 : 0; break;
 			}
-			for (int i = 0; i <= n; i++)
-				printf("%d ", L[i]);
-			printf("\n");
-			for (int i = 0; i <= n; i++)
-				printf("%d ", R[i]);
-			printf("\n");
 		}
 
 		long long ans = 0;
