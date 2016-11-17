@@ -7,27 +7,31 @@ const int maxn = 100000 + 10;
 
 int n, m, L[maxn], R[maxn], sw;
 
-void left_change(int b1, int b2) {
-	if (L[b2] == b1) return;
-	int l1 = L[b1], r1 = R[b1];
-	R[l1] = r1; L[r1] = l1;
-	int l2 = L[b2];
-	R[l2] =  b1; L[b1] = l2; R[b1] = b2; L[b2] = b1;
+void link(int x, int y) {
+	R[x] = y; L[y] = x;
 }
 
-void right_change(int b1, int b2) {
-	if (R[b2] == b1) return;
-	int l1 = L[b1], r1 = R[b1];
-	R[l1] = r1; L[r1] = l1;
-	int r2 = R[b2];
-	L[r2] = b1; R[b1] = r2; R[b2] = b1; L[b1] = b2;
+void left_change(int x, int y) {
+	if (L[y] == x) return;
+	int LX = L[x], RX = R[x], LY = L[y], RY = R[y];
+	link(LX, RX);
+	link(LY, x);
+	link(x, y);
 }
 
-void swap_change(int b1, int b2) {
-	int l1 = L[b1], l2 = L[b2];
-	int r1 = R[b1], r2 = R[b2];
-	R[l1] = b2; L[r1] = b2; L[b2] = l1; R[b2] = r1;
-	R[l2] = b1; L[r2] = b1; L[b1] = l2; R[b1] = r2;
+void right_change(int x, int y) {
+	if (R[y] == x) return;
+	int LX = L[x], RX = R[x], LY = L[y], RY = R[y];
+	link(LX, RX);
+	link(y, x);
+	link(x, RY);
+}
+
+
+void swap_change(int x, int y) {
+	int LX = L[x], RX = R[x], LY = L[y], RY = R[y];
+	link(LX, y); link(y, RX);
+	link(LY, x); link(x, RY);
 }
 
 int main(void) {
@@ -51,22 +55,28 @@ int main(void) {
 				case 1: left_change(b1, b2); break;
 				case 2: right_change(b1, b2); break;
 				case 3: swap_change(b1, b2); break;
-				case 4: sw = (sw == 0) ? 1 : 0;
+				case 4: sw = (sw == 0) ? 1 : 0; break;
 			}
+			for (int i = 0; i <= n; i++)
+				printf("%d ", L[i]);
+			printf("\n");
+			for (int i = 0; i <= n; i++)
+				printf("%d ", R[i]);
+			printf("\n");
 		}
 
 		long long ans = 0;
-		int cnt = 0;
+		int b = 0;
 		if (sw == 0) {
-			for (int i = R[0]; i != 0; i = R[i]) {
-				if (cnt == 0) ans += i;
-				cnt = (cnt == 0) ? 1 : 0;
+			for (int i = 1; i <= n; i++) {
+				b = R[b];
+				if (i % 2 == 1) ans += b;
 			}
 		}
 		else {
-			for (int i = L[0]; i != 0; i = L[i]) {
-				if (cnt == 0) ans += i;
-				cnt = (cnt == 0) ? 1 : 0;
+			for (int i = 1; i <= n; i++) {
+				b = L[b];
+				if (i % 2 == 1) ans += b;
 			}
 		}
 
