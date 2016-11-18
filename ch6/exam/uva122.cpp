@@ -7,54 +7,62 @@ using namespace std;
 
 const int maxn = 512;
 
-int v[maxn], L[maxn], R[maxn];
+struct Node {
+	int L, R, have_value, value;
+};
+
+Node bt[maxn];
 char buf[maxn];
+int cnt, pos;
 
 int main(void) {
-	freopen("data.in", "r", stdin);
-	freopen("data.out", "w", stdout);
+	// freopen("data.in", "r", stdin);
+	// freopen("data.out", "w", stdout);
 	while (scanf("%s", buf) == 1) {
-		memset(v, 0, sizeof(v));
+		memset(bt, 0, sizeof(bt));
 		vector <int> ans; ans.resize(0);
 		queue <int> leaf; while (!leaf.empty()) leaf.pop();
 		bool is_incompleted = false;
-		int end;
+		cnt = 1;
 		do {
-			int len = strlen(buf);
-			for (int i = 0 ; i < len; i++)
-				if (!isalnum(buf[i]))
-					buf[i]= ' ';
-			int value;
-			char path[10];
-			if (sscanf(buf, "%d%s", &value, path) == 2) {
-				int pos = 1, pathlen = strlen(path);
-				for (int j = 0; j < pathlen; j++) {
-					if (path[j] == 'L') {pos *= 2; if (v[pos] == 0) v[pos] = -1;}
-					else {pos = pos*2+1; if (v[pos] == 0) v[pos] = -1;}
+			int va; sscanf(&buf[1], "%d", &va);
+			// printf("%d\n",h va);
+			char *s = strchr(buf, ',');
+			int len = strlen(s);
+			pos = 0;
+			for (int i = 0; i < len; i++) {
+				if (s[i] == 'L') {
+					if (bt[pos].L == 0) bt[pos].L = cnt++;
+					pos = bt[pos].L;
 				}
-				v[pos] = value;
+				else if (s[i] == 'R') {
+					if (bt[pos].R == 0) bt[pos].R = cnt++;
+					pos = bt[pos].R;
+				}
+			}
+			if (bt[pos].have_value == 0) {
+				bt[pos].value = va;
+				bt[pos].have_value = 1;
 			}
 			else {
-				v[1] = value;
+				is_incompleted = true;
+				while (buf[1] != ')') {
+					scanf("%s", buf);
+				}
+				goto out;
 			}
 		} while (scanf("%s", buf) == 1 && buf[1] != ')');
 
-		leaf.push(1);
-		end = (1<<8)-1;
-		if (v[1] == 0) {
-			is_incompleted = true;
-			goto out;
-		}
+		leaf.push(0);
 		while (!leaf.empty()) {
 			int k = leaf.front(); leaf.pop();
-			ans.push_back(v[k]);
-			int ltree = 2*k, rtree = 2*k+1;
-			if (ltree > end) continue;
-			if (v[ltree] == -1 || v[rtree] == -1) {
-				is_incompleted = true; goto out;
+			if (bt[k].have_value == 0) {
+				is_incompleted = true;
+				goto out;
 			}
-			if (v[ltree] > 0) leaf.push(ltree);
-			if (v[rtree] > 0) leaf.push(rtree);
+			ans.push_back(bt[k].value);
+			if (bt[k].L != 0) leaf.push(bt[k].L);
+			if (bt[k].R != 0) leaf.push(bt[k].R);
 		}
 out:
 		if (is_incompleted)
