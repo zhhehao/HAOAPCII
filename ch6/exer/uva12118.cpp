@@ -1,3 +1,7 @@
+/*
+** 欧拉道路定理2：如果连通无向图 G 有 2k 个奇顶点，那么它可以用 k 笔画成，并且至少要用 k 笔画成
+*/
+
 #include <cstdio>
 #include <cstring>
 #include <vector>
