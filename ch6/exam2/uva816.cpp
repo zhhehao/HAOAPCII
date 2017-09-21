@@ -1,69 +1,158 @@
-# include <cstdio>
+# include <iostream>
 # include <cstring>
 # include <vector>
+# include <string>
+# include <map>
+# include <queue>
 using namespace std;
 
-int v[10][10][4][3];
+struct Place {
+    int x, y, dir, f;
+};
 
-struct Point {
+struct Maze {
+    int m[4][3][2];
+};
+
+Maze maze[10][10];
+string m_name;
+int sx, sy, ex, ey, sdir;
+map <char, int> mdir;
+map <char, int> mturn;
+vector <Place> path;
+int vis[10][10][4];
+
+void set_maze(const int &td, const int &tt, int &rx, int &ry, const int &x, const int &y) {
+    if (td == 0) {
+        switch(tt) {
+            case 0: rx = x; ry = y - 1; break;
+            case 1: rx = x; ry = y + 1; break;
+            case 2: rx = x - 1; ry = y; break;
+        }
+        return;
+    }
+    if (td == 1) {
+        switch(tt) {
+            case 0: rx = x - 1; ry = y; break;
+            case 1: rx = x + 1; ry = y; break;
+            case 2: rx = x; ry = y + 1; break;
+        }
+        return;
+    }
+    if (td == 2) {
+        switch(tt) {
+            case 0: rx = x; ry = y + 1; break;
+            case 1: rx = x; ry = y - 1; break;
+            case 2: rx = x + 1; ry = y; break;
+        }
+        return;
+    }
+    if (td == 3) {
+        switch(tt) {
+            case 0: rx = x + 1; ry = y; break;
+            case 1: rx = x - 1; ry = y; break;
+            case 2: rx = x; ry = y - 1; break;
+        }
+        return;
+    }
+}
+
+void input(void) {
+    string str;
+    cin >> sx >> sy >> str >> ex >> ey;
+    sdir = mdir[str[0]];
+    memset(maze, 0, sizeof(maze));
     int x, y;
-};
+    while (cin >> x && x != 0) {
+        cin >> y;
+        while (cin >> str && str[0] != '*') {
+            int td = mdir[str[0]];
+            for (int i = 1; i < str.length(); i++) {
+                int tt = mturn[str[i]];
+                set_maze(td, tt, maze[x][y].m[td][tt][0], maze[x][y].m[td][tt][1], x, y);
+                // cout << maze[x][y].m[td][tt][0] << " + " << maze[x][y].m[td][tt][1] << "\n";
+            }
+        }
+    }
+}
 
-Point ans[1000], next[4][3], p_s, p_e;
+bool solve(void) {
+    memset(vis, 0, sizeof(vis));
+    queue <Place> q; path.resize(0);
+    Place start; start.x = sx; start.y = sy; start.f = -1; path.push_back(start);
+    Place bp;
+    switch (sdir) {
+        case 0: sx--; break;
+        case 1: sy++; break;
+        case 2: sx++; break;
+        case 3: sy--; break;
+    }
+    bp.x = sx; bp.y = sy; bp.dir = sdir; bp.f = path.size()-1;
+    q.push(bp);
+    vis[bp.x][bp.y][bp.dir] = 1;
+    while (!q.empty()) {
+        Place pp = q.front(); q.pop();
+        path.push_back(pp);
+        int fpos = path.size()-1;
+        if (pp.x == ex && pp.y == ey) return true;
+        for (int j = 0; j < 3; j++) {
+            if (maze[pp.x][pp.y].m[pp.dir][j][0] != 0) {
+                Place qp;
+                qp.x = maze[pp.x][pp.y].m[pp.dir][j][0];
+                qp.y = maze[pp.x][pp.y].m[pp.dir][j][1];
+                qp.f = fpos;
+                if (j == 0)
+                    qp.dir = (pp.dir+3)%4;
+                else if (j == 1)
+                    qp.dir = (pp.dir+1)%4;
+                else
+                    qp.dir = pp.dir;
+                if (vis[qp.x][qp.y][qp.dir] == 0) {
+                    q.push(qp);
+                    vis[qp.x][qp.y][qp.dir] = 1;
+                }
+            }
+        }
+    }
+    return false;
+}
 
-struct Inter {
-    Point p;
-    vector <int> vi[4];
-};
-
-Inter maze[10][10];
-
-int solve(Point p, int dir, int step) {
-    // dfs solution
+void output(void) {
+    cout << m_name +"\n";
+    if (solve()) {
+        vector <Place> ans; ans.resize(0);
+        int pos = path.size()-1;
+        do {
+            ans.push_back(path[pos]);
+            pos = path[pos].f;
+        } while (pos != -1);
+        int cur = ans.size()-1, cnt = 0;
+        bool first = true;
+        while (cur >= 0) {
+            cnt++;
+            if (first) {cout << "  " << "(" << ans[cur].x << "," << ans[cur].y << ")"; first = false; cur--; continue;}
+            cout << " " << "(" << ans[cur].x << "," << ans[cur].y << ")"; cur--;
+            if (cnt % 10 == 0) {cout << "\n"; first = true;}
+        }
+        if (cnt % 10 != 0) cout << "\n";
+    }
+    else
+        cout << "  No Solution Possible\n";
 }
 
 int main(void) {
-    freopen("d.in", "r", stdin);
-    freopen("d.out", "w", stdout);
 
-    next[0][0].x = 0; next[0][0].y = -1;
-    next[0][1].x = -1; next[0][1].y = 0;
-    next[0][2].x = 0; next[0][2].y = 1;
+# ifdef LOCAL
+    freopen("data.in", "r", stdin);
+    freopen("data.out", "w", stdout);
+# endif
 
-    next[1][0].x = 1; next[1][0].y = 0;
-    next[1][1].x = 0; next[1][1].y = -1;
-    next[1][2].x = -1; next[1][2].y = 0;
-
-    next[2][0].x = 0; next[2][0].y = 1;
-    next[2][1].x = 1; next[2][1].y = 0;
-    next[2][2].x = 0; next[2][2].y = -1;
-
-    next[3][0].x = -1; next[3][0].y = 0;
-    next[3][1].x = 0; next[3][1].y = 1;
-    next[3][2].x = 1; next[3][2].y = 0;
-
-    char buff[30];
-    while (scanf("%s", buff)) {
-        if (strcmp(buff, "END") == 0) break;
-        printf("%s\n", buff);
-        scanf("%d%d%s%d%d", &p_s.x, &p_s.y, buff, &p_e.x, &p_e.y);
-        int dir;
-        switch(buff[0]) {
-            case 'N': dir = 0; break;
-            case 'W': dir = 1; break;
-            case 'S': dir = 2; break;
-            case 'E': dir = 3; break;
-        }
-
-        // get input
-
-        ans[0].x = p_s.x; ans[0].y = p_s.y;
-        if (solve(p_s, dir, 1) < 0)
-            printf("  No Solution Possible\n");
-        else {
-            // put output
-        }
+    mdir.clear(); mturn.clear();
+    mdir['N'] = 0; mdir['E'] = 1; mdir['S'] = 2; mdir['W'] = 3;
+    mturn['L'] = 0; mturn['R'] = 1; mturn['F'] = 2;
+    while (cin >> m_name && m_name != "END") {
+        input();
+        output();
     }
-
     return 0;
 }
